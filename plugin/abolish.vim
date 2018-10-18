@@ -486,11 +486,11 @@ endfu
 
 fu! s:abbreviate_from_dict(cmd, dict) abort
     for [lhs, rhs] in items(a:dict)
-        exe a:cmd lhs rhs
+        exe a:cmd.' '.lhs.' '.rhs
     endfor
 endfu
 
-let s:commands.abbrev     = s:commands.abstract.clone()
+let s:commands.abbrev = s:commands.abstract.clone()
 let s:commands.abbrev.options = {'buffer':0, 'cmdline':0, 'delete':0}
 fu! s:commands.abbrev.process(bang, line1, line2, count, args) abort
     let args = copy(a:args)
@@ -522,9 +522,8 @@ fu! s:commands.abbrev.process(bang, line1, line2, count, args) abort
     return ''
 endfu
 
-let s:commands.delete   = s:commands.abbrev.clone()
+let s:commands.delete = s:commands.abbrev.clone()
 let s:commands.delete.options.delete = 1
-
 " }}}1
 
 " Interface {{{1
@@ -538,10 +537,7 @@ call extend(Abolish.Coercions, {
     \ 'c': Abolish.camelcase,
     \ 'm': Abolish.mixedcase,
     \ 's': Abolish.snakecase,
-    \ '_': Abolish.snakecase,
     \ 'u': Abolish.uppercase,
-    \ 'U': Abolish.uppercase,
-    \ '-': Abolish.dashcase,
     \ 'k': Abolish.dashcase,
     \ '.': Abolish.dotcase,
     \ ' ': Abolish.spacecase,
