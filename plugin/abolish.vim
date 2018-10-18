@@ -6,19 +6,6 @@ let g:loaded_abolish = 1
 " Source:
 "     https://github.com/tpope/vim-abolish/blob/master/plugin/abolish.vim
 
-" Initialization {{{1
-
-if !exists('g:abolish_save_file')
-    if isdirectory(expand('~/.vim'))
-        let g:abolish_save_file = expand('~/.vim/after/plugin/abolish.vim')
-    elseif isdirectory(expand('~/vimfiles'))
-        let g:abolish_save_file = expand('~/vimfiles/after/plugin/abolish.vim')
-    else
-        let g:abolish_save_file = expand('~/.vim/after/plugin/abolish.vim')
-    endif
-endif
-
-" }}}1
 " Utility functions {{{1
 
 fu! s:function(name) abort
@@ -532,21 +519,6 @@ fu! s:commands.abbrev.process(bang, line1, line2, count, args) abort
     endif
     let dict = s:create_dictionary(bad, good, self.options)
     call s:abbreviate_from_dict(cmd, dict)
-    if a:bang
-        let i = 0
-        let str = 'Abolish '.join(args, ' ')
-        let file = g:abolish_save_file
-        if !isdirectory(fnamemodify(file, ':h'))
-            call mkdir(fnamemodify(file, ':h'), 'p')
-        endif
-
-        if filereadable(file)
-            let old = readfile(file)
-        else
-            let old = ["\" Exit if :Abolish isn't available.", "if !exists(':Abolish')", "    finish", "endif", ""]
-        endif
-        call writefile(old + [str], file)
-    endif
     return ''
 endfu
 
@@ -608,7 +580,8 @@ fu! s:coerce(_) abort
     endtry
 endfu
 
-nno <silent>  cr  :<c-u>call <sid>get_transformation()<bar>set opfunc=<sid>coerce<bar>norm! g@l<cr>
+nno <silent>  cr  :<c-u>call <sid>get_transformation()
+                  \<bar>set opfunc=<sid>coerce<bar>norm! g@l<cr>
 
 " Commands {{{2
 
