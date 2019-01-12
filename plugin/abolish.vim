@@ -9,7 +9,7 @@ let g:loaded_abolish = 1
 " Utility functions {{{1
 
 fu! s:function(name) abort
-    return function(substitute(a:name, '^s:', matchstr(expand('<sfile>'), '<SNR>\d\+_'), ''))
+    return function(substitute(a:name, '^s:', matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'), ''))
 endfu
 
 fu! s:send(self, func, ...) abort
