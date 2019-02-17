@@ -579,7 +579,7 @@ endfu
 nno <silent>  cr  :<c-u>call <sid>get_transformation()
                   \<bar>set opfunc=<sid>coerce<bar>norm! g@l<cr>
 
-" TODO: add a visual mode mapping
+" TODO: add a visual mode mapping to be able to change `foo bar baz` into `foo_bar_baz`.
 " https://github.com/tpope/vim-abolish/issues/74
 
 " Commands {{{2
