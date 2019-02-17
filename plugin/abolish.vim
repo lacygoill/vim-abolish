@@ -511,7 +511,7 @@ fu! s:commands.abbrev.process(bang, line1, line2, count, args) abort
         let cmd = cmd . ' <buffer>'
     endif
     let [bad, good] = s:badgood(a:args)
-    if substitute(bad, '{.\{-\}.}', '', 'g') !~ '^\k\+$'
+    if substitute(bad, '[{},]', '', 'g') !~# '^\k*$'
         call s:throw('E474: Invalid argument (not a keyword: '.string(bad).')')
     endif
     if !self.options.delete && good == ''
@@ -578,6 +578,9 @@ endfu
 
 nno <silent>  cr  :<c-u>call <sid>get_transformation()
                   \<bar>set opfunc=<sid>coerce<bar>norm! g@l<cr>
+
+" TODO: add a visual mode mapping
+" https://github.com/tpope/vim-abolish/issues/74
 
 " Commands {{{2
 
