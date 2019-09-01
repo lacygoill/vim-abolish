@@ -194,7 +194,7 @@ endfu
 fu! s:SubComplete(A, L, P) abort
     if a:A =~ '^[/?]\k\+$'
         let char = strpart(a:A, 0, 1)
-        return join(map(s:words(), {i,v -> char . v}), "\n")
+        return join(map(s:words(), {_,v -> char . v}), "\n")
     elseif a:A =~# '^\k\+$'
         return join(s:words(), "\n")
     endif
@@ -343,7 +343,7 @@ fu! s:pattern(dict, boundaries) abort
         let a = ''
         let b = ''
     endif
-    return '\v\C'.a.'%('.join(map(sort(keys(a:dict), function('s:sort')), {i,v -> s:subesc(v)}), '|').')'.b
+    return '\v\C'.a.'%('.join(map(sort(keys(a:dict), function('s:sort')), {_,v -> s:subesc(v)}), '|').')'.b
 endfu
 
 fu! s:egrep_pattern(dict, boundaries) abort
@@ -354,7 +354,7 @@ fu! s:egrep_pattern(dict, boundaries) abort
         \ :     ['', '']
 
     return a.'('.join(map(sort(keys(a:dict), function('s:sort')),
-    \ {i,v -> s:subesc(v)}), '\|')
+    \ {_,v -> s:subesc(v)}), '\|')
     \ .')'.b
 endfu
 
@@ -473,8 +473,8 @@ endfu
 " Abbreviations {{{1
 
 fu! s:badgood(args) abort
-    let words = filter(copy(a:args), {i,v -> v !~ '^-'})
-    call filter(a:args, {i,v -> v =~ '^-'})
+    let words = filter(copy(a:args), {_,v -> v !~ '^-'})
+    call filter(a:args, {_,v -> v =~ '^-'})
     if empty(words)
         call s:throw('E471: Argument required')
     elseif !empty(a:args)
