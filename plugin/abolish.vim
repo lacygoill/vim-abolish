@@ -171,7 +171,7 @@ fu! s:expand_braces(dict) abort
             endif
             let targets      = split(kmiddle, ',', 1)
             let replacements = split(vmiddle, ',', 1)
-            if replacements == ['']
+            if replacements ==# ['']
                 let replacements = targets
             endif
             for i in range(0, len(targets)-1)
@@ -267,7 +267,7 @@ fu! s:parse_subvert(bang, line1, line2, count, args) abort
     let separator = matchstr(args, '^.')
     let split = split(args, separator, 1)[1:]
 
-    return a:count || split == ['']
+    return a:count || split ==# ['']
         \ ?     s:parse_substitute(a:bang, a:line1, a:line2, a:count, split)
         \
         \ : len(split) == 1
@@ -393,9 +393,9 @@ let s:commands.search.options = {'word': 0, 'variable': 0, 'flags': ''}
 fu! s:commands.search.process(bang, line1, line2, count, args) abort
     call s:extractopts(a:args, self.options)
     if self.options.word
-        let self.options.flags .= 'w'
+        let self.options.flags ..= 'w'
     elseif self.options.variable
-        let self.options.flags .= 'v'
+        let self.options.flags ..= 'v'
     endif
     let opts = s:normalize_options(self.options)
     if len(a:args) > 1
@@ -450,9 +450,9 @@ let s:commands.substitute.options = {'word': 0, 'variable': 0, 'flags': 'g'}
 fu! s:commands.substitute.process(bang, line1, line2, count, args) abort
     call s:extractopts(a:args, self.options)
     if self.options.word
-        let self.options.flags .= 'w'
+        let self.options.flags ..= 'w'
     elseif self.options.variable
-        let self.options.flags .= 'v'
+        let self.options.flags ..= 'v'
     endif
     let opts = s:normalize_options(self.options)
     if len(a:args) <= 1
