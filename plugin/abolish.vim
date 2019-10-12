@@ -4,15 +4,15 @@ endif
 let g:loaded_abolish = 1
 
 " Source:
-"     https://github.com/tpope/vim-abolish/blob/master/plugin/abolish.vim
+" https://github.com/tpope/vim-abolish/blob/master/plugin/abolish.vim
 
 " Utility functions {{{1
 
-fu! s:function(name) abort
+fu s:function(name) abort
     return function(substitute(a:name, '^s:', matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'), ''))
 endfu
 
-fu! s:send(self, func, ...) abort
+fu s:send(self, func, ...) abort
     if type(a:func) == type('') || type(a:func) == type(0)
         let l:Func = get(a:self, a:func, '')
     else
@@ -33,7 +33,7 @@ fu! s:send(self, func, ...) abort
 endfu
 
 let s:object = {}
-fu! s:object.clone(...) abort
+fu s:object.clone(...) abort
     let sub = deepcopy(self)
     return a:0 ? extend(sub, a:1) : sub
 endfu
@@ -44,12 +44,12 @@ endif
 call extend(Abolish, s:object, 'force')
 call extend(Abolish, {'Coercions': {}}, 'keep')
 
-fu! s:throw(msg) abort
+fu s:throw(msg) abort
     let v:errmsg = a:msg
     throw 'Abolish: '.a:msg
 endfu
 
-fu! s:words() abort
+fu s:words() abort
     let words = []
     let lnum = line('w0')
     while lnum <= line('w$')
@@ -64,7 +64,7 @@ fu! s:words() abort
     return words
 endfu
 
-fu! s:extractopts(list, opts) abort
+fu s:extractopts(list, opts) abort
     let i = 0
     while i < len(a:list)
         if a:list[i] =~ '^-[^=]' && has_key(a:opts, matchstr(a:list[i], '-\zs[^=]*'))
@@ -89,11 +89,11 @@ endfu
 " }}}1
 " Dictionary creation {{{1
 
-fu! s:mixedcase(word) abort
+fu s:mixedcase(word) abort
     return substitute(s:camelcase(a:word), '^.', '\u&', '')
 endfu
 
-fu! s:camelcase(word) abort
+fu s:camelcase(word) abort
     let word = substitute(a:word, '-', '_', 'g')
     if word !~# '_' && word =~# '\l'
         return substitute(word, '^.', '\l&', '')
@@ -103,7 +103,7 @@ fu! s:camelcase(word) abort
     endif
 endfu
 
-fu! s:snakecase(word) abort
+fu s:snakecase(word) abort
     let word = substitute(a:word, '::', '/', 'g')
     let word = substitute(word, '\(\u\+\)\(\u\l\)', '\1_\2', 'g')
     let word = substitute(word, '\(\l\|\d\)\(\u\)', '\1_\2', 'g')
@@ -112,23 +112,23 @@ fu! s:snakecase(word) abort
     return word
 endfu
 
-fu! s:uppercase(word) abort
+fu s:uppercase(word) abort
     return toupper(s:snakecase(a:word))
 endfu
 
-fu! s:dashcase(word) abort
+fu s:dashcase(word) abort
     return substitute(s:snakecase(a:word), '_', '-', 'g')
 endfu
 
-fu! s:spacecase(word) abort
+fu s:spacecase(word) abort
     return substitute(s:snakecase(a:word), '_', ' ', 'g')
 endfu
 
-fu! s:dotcase(word) abort
+fu s:dotcase(word) abort
     return substitute(s:snakecase(a:word), '_', '.', 'g')
 endfu
 
-fu! s:titlecase(word) abort
+fu s:titlecase(word) abort
     return substitute(s:spacecase(a:word), '\(\<\w\)', '\=toupper(submatch(1))', 'g')
 endfu
 
@@ -143,7 +143,7 @@ call extend(Abolish, {
     \ 'titlecase':  s:function('s:titlecase')
     \ }, 'keep')
 
-fu! s:create_dictionary(lhs, rhs, opts) abort
+fu s:create_dictionary(lhs, rhs, opts) abort
     let dictionary = {}
     let i = 0
     let expanded = s:expand_braces({a:lhs : a:rhs})
@@ -159,7 +159,7 @@ fu! s:create_dictionary(lhs, rhs, opts) abort
     return dictionary
 endfu
 
-fu! s:expand_braces(dict) abort
+fu s:expand_braces(dict) abort
     let new_dict = {}
     for [key, val] in items(a:dict)
         if key =~ '{.*}'
@@ -191,7 +191,7 @@ endfu
 " }}}1
 " Abolish Dispatcher {{{1
 
-fu! s:SubComplete(A, L, P) abort
+fu s:SubComplete(A, L, P) abort
     if a:A =~ '^[/?]\k\+$'
         let char = strpart(a:A, 0, 1)
         return join(map(s:words(), {_,v -> char . v}), "\n")
@@ -200,7 +200,7 @@ fu! s:SubComplete(A, L, P) abort
     endif
 endfu
 
-fu! s:Complete(A, L, P) abort
+fu s:Complete(A, L, P) abort
     let g:L = a:L
     " Vim bug: :Abolish -<Tab> calls this function with a:A equal to 0
     return a:A =~# '^[^/?-]' && type(a:A) != type(0)
@@ -215,11 +215,11 @@ endfu
 let s:commands = {}
 let s:commands.abstract = s:object.clone()
 
-fu! s:commands.abstract.dispatch(bang, line1, line2, count, args) abort
+fu s:commands.abstract.dispatch(bang, line1, line2, count, args) abort
     return self.clone().go(a:bang, a:line1, a:line2, a:count, a:args)
 endfu
 
-fu! s:commands.abstract.go(bang, line1, line2, count, args) abort
+fu s:commands.abstract.go(bang, line1, line2, count, args) abort
     let self.bang = a:bang
     let self.line1 = a:line1
     let self.line2 = a:line2
@@ -227,7 +227,7 @@ fu! s:commands.abstract.go(bang, line1, line2, count, args) abort
     return self.process(a:bang, a:line1, a:line2, a:count, a:args)
 endfu
 
-fu! s:dispatcher(bang, line1, line2, count, args) abort
+fu s:dispatcher(bang, line1, line2, count, args) abort
     let i = 0
     let args = copy(a:args)
     let command = s:commands.abbrev
@@ -250,7 +250,7 @@ endfu
 " }}}1
 " Subvert Dispatcher {{{1
 
-fu! s:subvert_dispatcher(bang, line1, line2, count, args) abort
+fu s:subvert_dispatcher(bang, line1, line2, count, args) abort
     try
         return s:parse_subvert(a:bang, a:line1, a:line2, a:count, a:args)
     catch /^Subvert: /
@@ -258,7 +258,7 @@ fu! s:subvert_dispatcher(bang, line1, line2, count, args) abort
     endtry
 endfu
 
-fu! s:parse_subvert(bang, line1, line2, count, args) abort
+fu s:parse_subvert(bang, line1, line2, count, args) abort
     if a:args =~ '^\%(\w\|$\)'
         let args = (a:bang ? '!' : '').a:args
     else
@@ -288,7 +288,7 @@ fu! s:parse_subvert(bang, line1, line2, count, args) abort
         \ :     s:parse_substitute(a:bang, a:line1, a:line2, a:count, split)
 endfu
 
-fu! s:normalize_options(flags) abort
+fu s:normalize_options(flags) abort
     if type(a:flags) == type({})
         let opts = a:flags
         let flags = get(a:flags, 'flags', '')
@@ -313,11 +313,11 @@ endfu
 " }}}1
 " Searching {{{1
 
-fu! s:subesc(pattern) abort
+fu s:subesc(pattern) abort
     return substitute(a:pattern, '[][\\/.*+?~%()&]', '\\&', 'g')
 endfu
 
-fu! s:sort(a, b) abort
+fu s:sort(a, b) abort
     if a:a ==? a:b
         return a:a == a:b ? 0 : a:a > a:b ? 1 : -1
     elseif strlen(a:a) == strlen(a:b)
@@ -327,7 +327,7 @@ fu! s:sort(a, b) abort
     endif
 endfu
 
-fu! s:pattern(dict, boundaries) abort
+fu s:pattern(dict, boundaries) abort
     if a:boundaries == 2
         let a = '<'
         let b = '>'
@@ -341,7 +341,7 @@ fu! s:pattern(dict, boundaries) abort
     return '\v\C'.a.'%('.join(map(sort(keys(a:dict), function('s:sort')), {_,v -> s:subesc(v)}), '|').')'.b
 endfu
 
-fu! s:egrep_pattern(dict, boundaries) abort
+fu s:egrep_pattern(dict, boundaries) abort
     let [a, b] = a:boundaries == 2
         \ ?     ['\<', '\>']
         \ : a:boundaries
@@ -353,12 +353,12 @@ fu! s:egrep_pattern(dict, boundaries) abort
     \ .')'.b
 endfu
 
-fu! s:c() abort
+fu s:c() abort
     call histdel('search', -1)
     return ''
 endfu
 
-fu! s:find_command(cmd, flags, word) abort
+fu s:find_command(cmd, flags, word) abort
     let opts = s:normalize_options(a:flags)
     let dict = s:create_dictionary(a:word, '', opts)
     " This is tricky.  If we use :/pattern, the search drops us at the
@@ -376,7 +376,7 @@ fu! s:find_command(cmd, flags, word) abort
     endif
 endfu
 
-fu! s:grep_command(args, bang, flags, word) abort
+fu s:grep_command(args, bang, flags, word) abort
     let opts = s:normalize_options(a:flags)
     let dict = s:create_dictionary(a:word, '', opts)
     if &grepprg == 'internal'
@@ -390,7 +390,7 @@ endfu
 let s:commands.search = s:commands.abstract.clone()
 let s:commands.search.options = {'word': 0, 'variable': 0, 'flags': ''}
 
-fu! s:commands.search.process(bang, line1, line2, count, args) abort
+fu s:commands.search.process(bang, line1, line2, count, args) abort
     call s:extractopts(a:args, self.options)
     if self.options.word
         let self.options.flags ..= 'w'
@@ -410,11 +410,11 @@ endfu
 " }}}1
 " Substitution {{{1
 
-fu! Abolished() abort
+fu Abolished() abort
     return get(g:abolish_last_dict, submatch(0), submatch(0))
 endfu
 
-fu! s:substitute_command(cmd, bad, good, flags) abort
+fu s:substitute_command(cmd, bad, good, flags) abort
     let opts = s:normalize_options(a:flags)
     let dict = s:create_dictionary(a:bad, a:good, opts)
     let lhs = s:pattern(dict, opts.boundaries)
@@ -422,7 +422,7 @@ fu! s:substitute_command(cmd, bad, good, flags) abort
     return a:cmd.'/'.lhs.'/\=Abolished()'.'/'.opts.flags
 endfu
 
-fu! s:parse_substitute(bang, line1, line2, count, args) abort
+fu s:parse_substitute(bang, line1, line2, count, args) abort
     if get(a:args, 0, '') =~ '^[/?'']'
         let separator = matchstr(a:args[0], '^.')
         let args = split(join(a:args, ' '), separator, 1)
@@ -447,7 +447,7 @@ endfu
 let s:commands.substitute = s:commands.abstract.clone()
 let s:commands.substitute.options = {'word': 0, 'variable': 0, 'flags': 'g'}
 
-fu! s:commands.substitute.process(bang, line1, line2, count, args) abort
+fu s:commands.substitute.process(bang, line1, line2, count, args) abort
     call s:extractopts(a:args, self.options)
     if self.options.word
         let self.options.flags ..= 'w'
@@ -467,7 +467,7 @@ endfu
 " }}}1
 " Abbreviations {{{1
 
-fu! s:badgood(args) abort
+fu s:badgood(args) abort
     let words = filter(copy(a:args), {_,v -> v !~ '^-'})
     call filter(a:args, {_,v -> v =~ '^-'})
     if empty(words)
@@ -479,7 +479,7 @@ fu! s:badgood(args) abort
     return [bad, join(words, ' ')]
 endfu
 
-fu! s:abbreviate_from_dict(cmd, dict) abort
+fu s:abbreviate_from_dict(cmd, dict) abort
     for [lhs, rhs] in items(a:dict)
         exe a:cmd.' '.lhs.' '.rhs
     endfor
@@ -487,7 +487,7 @@ endfu
 
 let s:commands.abbrev = s:commands.abstract.clone()
 let s:commands.abbrev.options = {'buffer':0, 'cmdline':0, 'delete':0}
-fu! s:commands.abbrev.process(bang, line1, line2, count, args) abort
+fu s:commands.abbrev.process(bang, line1, line2, count, args) abort
     let args = copy(a:args)
     call s:extractopts(a:args, self.options)
     if self.options.delete
@@ -524,7 +524,7 @@ let s:commands.delete.options.delete = 1
 " Interface {{{1
 " Mapping {{{2
 
-fu! s:unknown_coercion(letter, word) abort
+fu s:unknown_coercion(letter, word) abort
     return a:word
 endfu
 
@@ -540,11 +540,11 @@ call extend(Abolish.Coercions, {
     \ 'function missing': s:function('s:unknown_coercion')
     \ }, 'keep')
 
-fu! s:get_transformation() abort
+fu s:get_transformation() abort
     let s:transformation = nr2char(getchar())
 endfu
 
-fu! s:coerce(_) abort
+fu s:coerce(_) abort
     let cb_save = &cb
     try
         set cb=
@@ -579,12 +579,12 @@ nno <silent>  cr  :<c-u>call <sid>get_transformation()
 
 " Commands {{{2
 
-com! -nargs=+ -bang -bar -range=0 -complete=custom,s:Complete Abolish
+com -nargs=+ -bang -bar -range=0 -complete=custom,s:Complete Abolish
 \ exe s:dispatcher(<bang>0, <line1>, <line2>, <count>, [<f-args>])
 
-com! -nargs=1 -bang -bar -range=0 -complete=custom,s:SubComplete S
+com -nargs=1 -bang -bar -range=0 -complete=custom,s:SubComplete S
 \ exe s:subvert_dispatcher(<bang>0, <line1>, <line2>, <count>, <q-args>)
 
-com! -nargs=1 -bang -bar -range=0 -complete=custom,s:SubComplete Subvert
+com -nargs=1 -bang -bar -range=0 -complete=custom,s:SubComplete Subvert
 \ exe s:subvert_dispatcher(<bang>0, <line1>, <line2>, <count>, <q-args>)
 
