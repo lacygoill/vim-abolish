@@ -334,7 +334,7 @@ fu s:pattern(dict, boundaries) abort
     elseif a:boundaries
         " TODO: Replace `@<=` with `@1<=`?
         let a = '%(<|_@<=|[[:lower:]]@<=[[:upper:]]@=)'
-        let b =  '%(>|_@=|[[:lower:]]@<=[[:upper:]]@=)'
+        let b = '%(>|_@=|[[:lower:]]@<=[[:upper:]]@=)'
     else
         let a = ''
         let b = ''
