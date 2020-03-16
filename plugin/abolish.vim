@@ -242,7 +242,7 @@ fu s:dispatcher(bang, line1, line2, count, args) abort
     try
         return command.dispatch(a:bang, a:line1, a:line2, a:count, args)
     catch /^Abolish: /
-        return lg#catch_error()
+        return lg#catch()
     endtry
     return ''
 endfu
@@ -254,7 +254,7 @@ fu s:subvert_dispatcher(bang, line1, line2, count, args) abort
     try
         return s:parse_subvert(a:bang, a:line1, a:line2, a:count, a:args)
     catch /^Subvert: /
-        return lg#catch_error()
+        return lg#catch()
     endtry
 endfu
 
