@@ -169,7 +169,7 @@ fu s:expand_braces(dict) abort
             if all is# ''
                 let [vbefore, vmiddle, vafter] = [val, ',', '']
             endif
-            let targets      = split(kmiddle, ',', 1)
+            let targets = split(kmiddle, ',', 1)
             let replacements = split(vmiddle, ',', 1)
             if replacements ==# ['']
                 let replacements = targets
