@@ -201,7 +201,6 @@ fu s:SubComplete(A, L, P) abort
 endfu
 
 fu s:Complete(A, L, P) abort
-    let g:L = a:L
     " Vim bug: :Abolish -<Tab> calls this function with a:A equal to 0
     return a:A =~# '^[^/?-]' && type(a:A) != type(0)
         \ ?     join(s:words(), "\n")
@@ -296,7 +295,6 @@ fu s:normalize_options(flags) abort
         let opts = {}
         let flags = a:flags
     endif
-    let g:op1 = copy(opts)
     if flags =~# 'w'
         let opts.boundaries = 2
     elseif flags =~# 'v'
@@ -306,10 +304,8 @@ fu s:normalize_options(flags) abort
     endif
     let opts.case = (flags !~# 'I' ? get(opts, 'case', 1) : 0)
     let opts.flags = substitute(flags, '\C[avIiw]', '', 'g')
-    let g:op2 = copy(opts)
     return opts
 endfu
-
 " }}}1
 " Searching {{{1
 
@@ -567,13 +563,27 @@ fu s:coerce(_) abort
         endwhile
         call setreg('"', body, type)
         call setpos("'[", begin)
-        call setpos('.', begin)
+        " Why `+ [begin[2]]`?{{{
+        "
+        " So that the cursor doesn't jump  to an unexpected column position when
+        " we move vertically *right after* a coercion.
+        " Basically,  we  extend  the  position  described  by  `begin`  with  a
+        " `curswant` number describing the current column position.
+        "}}}
+        call setpos('.', begin + [begin[2]])
         let &cb = cb_save
     endtry
 endfu
 
-nno <silent> cr :<c-u>call <sid>get_transformation()
-                \<bar>set opfunc=<sid>coerce<bar>norm! g@l<cr>
+" We can't press `g@l` directly, because:{{{
+"
+" `s:get_transformation()` invokes  `getchar()` which would wrongly  consume the
+" `g` from `g@l`.
+"
+" Besides, we need `:exe` and `:norm!` to pass a possible count to `s:coerce()`.
+" Typing just `g@l` would reset the latter to 1.
+"}}}
+nno <silent> cr :<c-u>call <sid>get_transformation()<bar>set opfunc=<sid>coerce<bar>exe 'norm! '..v:count1..'g@l'<cr>
 
 " TODO: add a visual mode mapping to be able to change `foo bar baz` into `foo_bar_baz`.
 " https://github.com/tpope/vim-abolish/issues/74
