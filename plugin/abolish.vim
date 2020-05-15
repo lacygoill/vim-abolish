@@ -13,19 +13,19 @@ fu s:function(name) abort
 endfu
 
 fu s:send(self, func, ...) abort
-    if type(a:func) == type('') || type(a:func) == type(0)
+    if type(a:func) == v:t_string || type(a:func) == v:t_number
         let l:Func = get(a:self, a:func, '')
     else
         let l:Func = a:func
     endif
-    let s = type(a:self) == type({}) ? a:self : {}
-    if type(l:Func) == type(function('tr'))
+    let s = type(a:self) == v:t_dict ? a:self : {}
+    if type(l:Func) == v:t_func
         return call(l:Func, a:000, s)
-    elseif type(l:Func) == type({}) && has_key(l:Func, 'apply')
+    elseif type(l:Func) == v:t_dict && has_key(l:Func, 'apply')
         return call(l:Func.apply, a:000, l:Func)
-    elseif type(l:Func) == type({}) && has_key(l:Func, 'call')
+    elseif type(l:Func) == v:t_dict && has_key(l:Func, 'call')
         return call(l:Func.call, a:000, s)
-    elseif type(l:Func) == type('') && l:Func == '' && has_key(s, 'function missing')
+    elseif type(l:Func) == v:t_string && l:Func == '' && has_key(s, 'function missing')
         return call('s:send', [s, 'function missing', a:func] + a:000)
     else
         return l:Func
@@ -70,9 +70,9 @@ fu s:extractopts(list, opts) abort
         if a:list[i] =~ '^-[^=]' && has_key(a:opts, matchstr(a:list[i], '-\zs[^=]*'))
             let key   = matchstr(a:list[i], '-\zs[^=]*')
             let value = matchstr(a:list[i], '=\zs.*')
-            if type(get(a:opts, key)) == type([])
+            if type(get(a:opts, key)) == v:t_list
                 let a:opts[key] += [value]
-            elseif type(get(a:opts, key)) == type(0)
+            elseif type(get(a:opts, key)) == v:t_number
                 let a:opts[key] = 1
             else
                 let a:opts[key] = value
@@ -202,7 +202,7 @@ endfu
 
 fu s:Complete(A, L, P) abort
     " Vim bug: :Abolish -<Tab> calls this function with a:A equal to 0
-    return a:A =~# '^[^/?-]' && type(a:A) != type(0)
+    return a:A =~# '^[^/?-]' && type(a:A) != v:t_number
         \ ?     join(s:words(), "\n")
         \ : a:L =~# '^\w\+\s\+\%(-\w*\)\=$'
         \ ?     "-search\n-substitute\n-delete\n-buffer\n-cmdline\n"
@@ -288,7 +288,7 @@ fu s:parse_subvert(bang, line1, line2, count, args) abort
 endfu
 
 fu s:normalize_options(flags) abort
-    if type(a:flags) == type({})
+    if type(a:flags) == v:t_dict
         let opts = a:flags
         let flags = get(a:flags, 'flags', '')
     else
