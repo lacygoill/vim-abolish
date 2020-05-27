@@ -541,7 +541,12 @@ fu s:get_transformation() abort
     let s:transformation = nr2char(getchar())
 endfu
 
-fu s:coerce(_) abort
+fu s:coerce(...) abort
+    if !a:0
+        call s:get_transformation()
+        let &opfunc = matchstr(expand('<sfile>'), '<SNR>\w*$')
+        return 'g@l'
+    endif
     let cb_save = &cb
     try
         set cb=
@@ -575,15 +580,7 @@ fu s:coerce(_) abort
     endtry
 endfu
 
-" We can't press `g@l` directly, because:{{{
-"
-" `s:get_transformation()` invokes  `getchar()` which would wrongly  consume the
-" `g` from `g@l`.
-"
-" Besides, we need `:exe` and `:norm!` to pass a possible count to `s:coerce()`.
-" Typing just `g@l` would reset the latter to 1.
-"}}}
-nno <silent> cr :<c-u>call <sid>get_transformation()<bar>set opfunc=<sid>coerce<bar>exe 'norm! '..v:count1..'g@l'<cr>
+nno <expr> cr <sid>coerce()
 
 " TODO: add a visual mode mapping to be able to change `foo bar baz` into `foo_bar_baz`.
 " https://github.com/tpope/vim-abolish/issues/74
