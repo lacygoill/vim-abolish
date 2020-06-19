@@ -550,7 +550,7 @@ fu s:coerce(...) abort
     let cb_save = &cb
     try
         set cb=
-        let [body, type] = [getreg('"'), getregtype('"')]
+        let [body, type] = [getreg('"', 1, 1), getregtype('"')]
         let c = v:count1
         while c > 0
             let c -= 1
