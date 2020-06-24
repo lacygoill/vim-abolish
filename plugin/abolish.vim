@@ -85,7 +85,6 @@ fu s:extractopts(list, opts) abort
     endwhile
     return a:opts
 endfu
-
 " }}}1
 " Dictionary creation {{{1
 
@@ -187,7 +186,6 @@ fu s:expand_braces(dict) abort
         return new_dict
     endif
 endfu
-
 " }}}1
 " Abolish Dispatcher {{{1
 
@@ -245,7 +243,6 @@ fu s:dispatcher(bang, line1, line2, count, args) abort
     endtry
     return ''
 endfu
-
 " }}}1
 " Subvert Dispatcher {{{1
 
@@ -403,7 +400,6 @@ fu s:commands.search.process(bang, line1, line2, count, args) abort
         call s:throw('E471: Argument required')
     endif
 endfu
-
 " }}}1
 " Substitution {{{1
 
@@ -460,7 +456,6 @@ fu s:commands.substitute.process(bang, line1, line2, count, args) abort
         return s:substitute_command(cmd, a:args[0], good, self.options)
     endif
 endfu
-
 " }}}1
 " Abbreviations {{{1
 
@@ -550,7 +545,7 @@ fu s:coerce(...) abort
     let cb_save = &cb
     try
         set cb=
-        let [body, type] = [getreg('"', 1, 1), getregtype('"')]
+        let reg_save = getreginfo('"')
         let c = v:count1
         while c > 0
             let c -= 1
@@ -566,7 +561,7 @@ fu s:coerce(...) abort
                 norm! w
             endif
         endwhile
-        call setreg('"', body, type)
+        call setreg('"', reg_save)
         call setpos("'[", begin)
         " Why `+ [begin[2]]`?{{{
         "
