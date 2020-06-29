@@ -360,7 +360,7 @@ fu s:find_command(cmd, flags, word) abort
     " If we use :norm /pattern, we leave ourselves vulnerable to "press enter"
     " prompts (even with :silent).
     let cmd = (a:cmd =~ '[?!]' ? '?' : '/')
-    let @/ = s:pattern(dict, opts.boundaries)
+    call setreg('/', [s:pattern(dict, opts.boundaries)], 'c')
     if opts.flags == '' || !search(@/, 'n')
         return 'norm! '.cmd."\<cr>"
     elseif opts.flags =~ ';[/?]\@!'
