@@ -6,10 +6,13 @@ let g:loaded_abolish = 1
 " Source:
 " https://github.com/tpope/vim-abolish/blob/master/plugin/abolish.vim
 
+import Catch from 'lg.vim'
+
 " Utility functions {{{1
 
 fu s:function(name) abort
-    return function(substitute(a:name, '^s:', matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'), ''))
+    return substitute(a:name, '^s:', expand('<sfile>')->matchstr('.*\zs<SNR>\d\+_'), '')
+        \ ->function()
 endfu
 
 fu s:send(self, func, ...) abort
@@ -46,7 +49,7 @@ call extend(Abolish, {'Coercions': {}}, 'keep')
 
 fu s:throw(msg) abort
     let v:errmsg = a:msg
-    throw 'Abolish: '.a:msg
+    throw 'Abolish: ' .. a:msg
 endfu
 
 fu s:words() abort
@@ -68,11 +71,11 @@ fu s:extractopts(list, opts) abort
     let i = 0
     while i < len(a:list)
         if a:list[i] =~ '^-[^=]' && has_key(a:opts, matchstr(a:list[i], '-\zs[^=]*'))
-            let key   = matchstr(a:list[i], '-\zs[^=]*')
+            let key = matchstr(a:list[i], '-\zs[^=]*')
             let value = matchstr(a:list[i], '=\zs.*')
-            if type(get(a:opts, key)) == v:t_list
+            if get(a:opts, key)->type() == v:t_list
                 let a:opts[key] += [value]
-            elseif type(get(a:opts, key)) == v:t_number
+            elseif get(a:opts, key)->type() == v:t_number
                 let a:opts[key] = 1
             else
                 let a:opts[key] = value
@@ -97,7 +100,7 @@ fu s:camelcase(word) abort
     if word !~# '_' && word =~# '\l'
         return substitute(word, '^.', '\l&', '')
     else
-        let pat = '\=submatch(1) is# "" ? tolower(submatch(2)) : toupper(submatch(2))'
+        let pat = '\=submatch(1) == "" ? submatch(2)->tolower() : submatch(2)->toupper()'
         return substitute(word, '\C\(_\)\=\(.\)', pat, 'g')
     endif
 endfu
@@ -112,34 +115,34 @@ fu s:snakecase(word) abort
 endfu
 
 fu s:uppercase(word) abort
-    return toupper(s:snakecase(a:word))
+    return s:snakecase(a:word)->toupper()
 endfu
 
 fu s:dashcase(word) abort
-    return substitute(s:snakecase(a:word), '_', '-', 'g')
+    return s:snakecase(a:word)->substitute('_', '-', 'g')
 endfu
 
 fu s:spacecase(word) abort
-    return substitute(s:snakecase(a:word), '_', ' ', 'g')
+    return s:snakecase(a:word)->substitute('_', ' ', 'g')
 endfu
 
 fu s:dotcase(word) abort
-    return substitute(s:snakecase(a:word), '_', '.', 'g')
+    return s:snakecase(a:word)->substitute('_', '.', 'g')
 endfu
 
 fu s:titlecase(word) abort
-    return substitute(s:spacecase(a:word), '\(\<\w\)', '\=toupper(submatch(1))', 'g')
+    return s:spacecase(a:word)->substitute('\(\<\w\)', '\=submatch(1)->toupper()', 'g')
 endfu
 
 call extend(Abolish, {
-    \ 'camelcase':  s:function('s:camelcase'),
-    \ 'mixedcase':  s:function('s:mixedcase'),
-    \ 'snakecase':  s:function('s:snakecase'),
-    \ 'uppercase':  s:function('s:uppercase'),
-    \ 'dashcase':   s:function('s:dashcase'),
-    \ 'dotcase':    s:function('s:dotcase'),
-    \ 'spacecase':  s:function('s:spacecase'),
-    \ 'titlecase':  s:function('s:titlecase')
+    \ 'camelcase': s:function('s:camelcase'),
+    \ 'mixedcase': s:function('s:mixedcase'),
+    \ 'snakecase': s:function('s:snakecase'),
+    \ 'uppercase': s:function('s:uppercase'),
+    \ 'dashcase': s:function('s:dashcase'),
+    \ 'dotcase': s:function('s:dotcase'),
+    \ 'spacecase': s:function('s:spacecase'),
+    \ 'titlecase': s:function('s:titlecase')
     \ }, 'keep')
 
 fu s:create_dictionary(lhs, rhs, opts) abort
@@ -165,7 +168,7 @@ fu s:expand_braces(dict) abort
             let redo = 1
             let [all, kbefore, kmiddle, kafter;crap] = matchlist(key, '\(.\{-\}\){\(.\{-\}\)}\(.*\)')
             let [all, vbefore, vmiddle, vafter;crap] = matchlist(val, '\(.\{-\}\){\(.\{-\}\)}\(.*\)') + ['', '', '', '']
-            if all is# ''
+            if all == ''
                 let [vbefore, vmiddle, vafter] = [val, ',', '']
             endif
             let targets = split(kmiddle, ',', 1)
@@ -173,8 +176,9 @@ fu s:expand_braces(dict) abort
             if replacements ==# ['']
                 let replacements = targets
             endif
-            for i in range(0, len(targets)-1)
-                let new_dict[kbefore.targets[i].kafter] = vbefore.replacements[i%len(replacements)].vafter
+            for i in range(0, len(targets) - 1)
+                let new_dict[kbefore .. targets[i] .. kafter] =
+                    \ vbefore .. replacements[i % len(replacements)] .. vafter
             endfor
         else
             let new_dict[key] = val
@@ -192,7 +196,7 @@ endfu
 fu s:SubComplete(A, L, P) abort
     if a:A =~ '^[/?]\k\+$'
         let char = strpart(a:A, 0, 1)
-        return join(map(s:words(), {_,v -> char . v}), "\n")
+        return s:words()->map({_, v -> char .. v})->join("\n")
     elseif a:A =~# '^\k\+$'
         return join(s:words(), "\n")
     endif
@@ -239,7 +243,7 @@ fu s:dispatcher(bang, line1, line2, count, args) abort
     try
         return command.dispatch(a:bang, a:line1, a:line2, a:count, args)
     catch /^Abolish: /
-        return lg#catch()
+        return s:Catch()
     endtry
     return ''
 endfu
@@ -250,13 +254,13 @@ fu s:subvert_dispatcher(bang, line1, line2, count, args) abort
     try
         return s:parse_subvert(a:bang, a:line1, a:line2, a:count, a:args)
     catch /^Subvert: /
-        return lg#catch()
+        return s:Catch()
     endtry
 endfu
 
 fu s:parse_subvert(bang, line1, line2, count, args) abort
     if a:args =~ '^\%(\w\|$\)'
-        let args = (a:bang ? '!' : '').a:args
+        let args = (a:bang ? '!' : '') .. a:args
     else
         let args = a:args
     endif
@@ -332,7 +336,11 @@ fu s:pattern(dict, boundaries) abort
         let a = ''
         let b = ''
     endif
-    return '\v\C'.a.'%('.join(map(sort(keys(a:dict), function('s:sort')), {_,v -> s:subesc(v)}), '|').')'.b
+    return '\v\C' .. a .. '%(' .. keys(a:dict)
+        \ ->sort(function('s:sort'))
+        \ ->map({_, v -> s:subesc(v)})
+        \ ->join('|')
+        \ .. ')' .. b
 endfu
 
 fu s:egrep_pattern(dict, boundaries) abort
@@ -342,9 +350,11 @@ fu s:egrep_pattern(dict, boundaries) abort
         \ ?     ['(\<\|_)', '(\>\|_\|[[:upper:]][[:lower:]])']
         \ :     ['', '']
 
-    return a.'('.join(map(sort(keys(a:dict), function('s:sort')),
-    \ {_,v -> s:subesc(v)}), '\|')
-    \ .')'.b
+    return a .. '(' .. keys(a:dict)
+        \ ->sort(function('s:sort'))
+        \ ->map({_, v -> s:subesc(v)})
+        \ ->join('\|')
+        \ .. ')' .. b
 endfu
 
 fu s:c() abort
@@ -362,11 +372,11 @@ fu s:find_command(cmd, flags, word) abort
     let cmd = (a:cmd =~ '[?!]' ? '?' : '/')
     call setreg('/', [s:pattern(dict, opts.boundaries)], 'c')
     if opts.flags == '' || !search(@/, 'n')
-        return 'norm! '.cmd."\<cr>"
+        return 'norm! ' .. cmd .. "\<cr>"
     elseif opts.flags =~ ';[/?]\@!'
         call s:throw("E386: Expected '?' or '/' after ';'")
     else
-        return "exe 'norm! ".cmd.cmd.opts.flags."\<cr>'|call histdel('search', -1)"
+        return "exe 'norm! " .. cmd .. cmd .. opts.flags .. "\<cr>'|call histdel('search', -1)"
     endif
 endfu
 
@@ -374,11 +384,11 @@ fu s:grep_command(args, bang, flags, word) abort
     let opts = s:normalize_options(a:flags)
     let dict = s:create_dictionary(a:word, '', opts)
     if &grepprg == 'internal'
-        let lhs = "'".s:pattern(dict, opts.boundaries)."'"
+        let lhs = "'" .. s:pattern(dict, opts.boundaries) .. "'"
     else
-        let lhs = "-E '".s:egrep_pattern(dict, opts.boundaries)."'"
+        let lhs = "-E '" .. s:egrep_pattern(dict, opts.boundaries) .. "'"
     endif
-    return 'grep'.(a:bang ? '!' : '').' '.lhs.' '.a:args
+    return 'grep' .. (a:bang ? '!' : '') .. ' ' .. lhs .. ' ' .. a:args
 endfu
 
 let s:commands.search = s:commands.abstract.clone()
@@ -412,13 +422,13 @@ fu s:substitute_command(cmd, bad, good, flags) abort
     let dict = s:create_dictionary(a:bad, a:good, opts)
     let lhs = s:pattern(dict, opts.boundaries)
     let g:abolish_last_dict = dict
-    return a:cmd.'/'.lhs.'/\=Abolished()'.'/'.opts.flags
+    return a:cmd .. '/' .. lhs .. '/\=Abolished()' .. '/' .. opts.flags
 endfu
 
 fu s:parse_substitute(bang, line1, line2, count, args) abort
     if get(a:args, 0, '') =~ '^[/?'']'
         let separator = matchstr(a:args[0], '^.')
-        let args = split(join(a:args, ' '), separator, 1)
+        let args = join(a:args, ' ')->split(separator, 1)
         call remove(args, 0)
     else
         let args = a:args
@@ -432,7 +442,7 @@ fu s:parse_substitute(bang, line1, line2, count, args) abort
     if a:count == 0
         let cmd = 'substitute'
     else
-        let cmd = a:line1.','.a:line2.'substitute'
+        let cmd = a:line1 .. ',' .. a:line2 .. 'substitute'
     endif
     return s:substitute_command(cmd, bad, good, flags)
 endfu
@@ -460,12 +470,12 @@ endfu
 " Abbreviations {{{1
 
 fu s:badgood(args) abort
-    let words = filter(copy(a:args), {_,v -> v !~ '^-'})
-    call filter(a:args, {_,v -> v =~ '^-'})
+    let words = copy(a:args)->filter({_, v -> v !~ '^-'})
+    call filter(a:args, {_, v -> v =~ '^-'})
     if empty(words)
         call s:throw('E471: Argument required')
     elseif !empty(a:args)
-        call s:throw('Unknown argument: '.a:args[0])
+        call s:throw('Unknown argument: ' .. a:args[0])
     endif
     let [bad; words] = words
     return [bad, join(words, ' ')]
@@ -473,7 +483,7 @@ endfu
 
 fu s:abbreviate_from_dict(cmd, dict) abort
     for [lhs, rhs] in items(a:dict)
-        exe a:cmd.' '.lhs.' '.rhs
+        exe a:cmd .. ' ' .. lhs .. ' ' .. rhs
     endfor
 endfu
 
@@ -489,20 +499,20 @@ fu s:commands.abbrev.process(bang, line1, line2, count, args) abort
         let cmd = 'noreabbrev'
     endif
     if !self.options.cmdline
-        let cmd = 'i' . cmd
+        let cmd = 'i' .. cmd
     endif
     if self.options.delete
-        let cmd = ' sil! '.cmd
+        let cmd = ' sil! ' .. cmd
     endif
     if self.options.buffer
-        let cmd = cmd . ' <buffer>'
+        let cmd = cmd .. ' <buffer>'
     endif
     let [bad, good] = s:badgood(a:args)
     if substitute(bad, '[{},]', '', 'g') !~# '^\k*$'
-        call s:throw('E474: Invalid argument (not a keyword: '.string(bad).')')
+        call s:throw('E474: Invalid argument (not a keyword: ' .. string(bad) .. ')')
     endif
     if !self.options.delete && good == ''
-        call s:throw('E471: Argument required'.a:args[0])
+        call s:throw('E471: Argument required' .. a:args[0])
     endif
     let dict = s:create_dictionary(bad, good, self.options)
     call s:abbreviate_from_dict(cmd, dict)
@@ -533,13 +543,13 @@ call extend(Abolish.Coercions, {
     \ }, 'keep')
 
 fu s:get_transformation() abort
-    let s:transformation = nr2char(getchar())
+    let s:transformation = getchar()->nr2char()
 endfu
 
 fu s:coerce(...) abort
     if !a:0
         call s:get_transformation()
-        let &opfunc = matchstr(expand('<sfile>'), '<SNR>\w*$')
+        let &opfunc = expand('<sfile>')->matchstr('<SNR>\w*$')
         return 'g@l'
     endif
     let cb_save = &cb
@@ -583,11 +593,11 @@ nno <expr> cr <sid>coerce()
 " Commands {{{2
 
 com -nargs=+ -bang -bar -range=0 -complete=custom,s:Complete Abolish
-\ exe s:dispatcher(<bang>0, <line1>, <line2>, <count>, [<f-args>])
+    \ exe s:dispatcher(<bang>0, <line1>, <line2>, <count>, [<f-args>])
 
 com -nargs=1 -bang -bar -range=0 -complete=custom,s:SubComplete S
-\ exe s:subvert_dispatcher(<bang>0, <line1>, <line2>, <count>, <q-args>)
+    \ exe s:subvert_dispatcher(<bang>0, <line1>, <line2>, <count>, <q-args>)
 
 com -nargs=1 -bang -bar -range=0 -complete=custom,s:SubComplete Subvert
-\ exe s:subvert_dispatcher(<bang>0, <line1>, <line2>, <count>, <q-args>)
+    \ exe s:subvert_dispatcher(<bang>0, <line1>, <line2>, <count>, <q-args>)
 
