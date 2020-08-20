@@ -195,7 +195,7 @@ endfu
 
 fu s:SubComplete(A, L, P) abort
     if a:A =~ '^[/?]\k\+$'
-        let char = strpart(a:A, 0, 1)
+        let char = a:A[0]
         return s:words()->map({_, v -> char .. v})->join("\n")
     elseif a:A =~# '^\k\+$'
         return join(s:words(), "\n")
