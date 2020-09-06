@@ -92,7 +92,7 @@ endfu
 " Dictionary creation {{{1
 
 fu s:mixedcase(word) abort
-    return substitute(s:camelcase(a:word), '^.', '\u&', '')
+    return s:camelcase(a:word)->substitute('^.', '\u&', '')
 endfu
 
 fu s:camelcase(word) abort
@@ -198,14 +198,14 @@ fu s:SubComplete(A, L, P) abort
         let char = a:A[0]
         return s:words()->map({_, v -> char .. v})->join("\n")
     elseif a:A =~# '^\k\+$'
-        return join(s:words(), "\n")
+        return s:words()->join("\n")
     endif
 endfu
 
 fu s:Complete(A, L, P) abort
     " Vim bug: :Abolish -<Tab> calls this function with a:A equal to 0
     return a:A =~# '^[^/?-]' && type(a:A) != v:t_number
-        \ ?     join(s:words(), "\n")
+        \ ?     s:words()->join("\n")
         \ : a:L =~# '^\w\+\s\+\%(-\w*\)\=$'
         \ ?     "-search\n-substitute\n-delete\n-buffer\n-cmdline\n"
         \ : a:L =~# ' -\%(search\|substitute\)\>'
@@ -283,7 +283,7 @@ fu s:parse_subvert(bang, line1, line2, count, args) abort
         \ ?     s:grep_command(rest, a:bang, flags, split[0])
         \
         \ : len(split) >= 2 && separator == ' '
-        \ ?     s:grep_command(join(split[1:], ' '), a:bang, '', split[0])
+        \ ?     join(split[1:], ' ')->s:grep_command(a:bang, '', split[0])
         \
         \ :     s:parse_substitute(a:bang, a:line1, a:line2, a:count, split)
 endfu
@@ -403,7 +403,7 @@ fu s:commands.search.process(bang, line1, line2, count, args) abort
     endif
     let opts = s:normalize_options(self.options)
     if len(a:args) > 1
-        return s:grep_command(join(a:args[1:], ' '), a:bang, opts, a:args[0])
+        return join(a:args[1:], ' ')->s:grep_command(a:bang, opts, a:args[0])
     elseif len(a:args) == 1
         return s:find_command(a:bang ? '!' : ' ', opts, a:args[0])
     else
