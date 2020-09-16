@@ -11,7 +11,7 @@ import Catch from 'lg.vim'
 " Utility functions {{{1
 
 fu s:function(name) abort
-    return substitute(a:name, '^s:', expand('<sfile>')->matchstr('.*\zs<SNR>\d\+_'), '')
+    return substitute(a:name, '^s:', expand('<stack>')->matchstr('.*\zs<SNR>\d\+_'), '')
         \ ->function()
 endfu
 
@@ -22,16 +22,16 @@ fu s:send(self, func, ...) abort
         let l:Func = a:func
     endif
     let s = type(a:self) == v:t_dict ? a:self : {}
-    if type(l:Func) == v:t_func
-        return call(l:Func, a:000, s)
-    elseif type(l:Func) == v:t_dict && has_key(l:Func, 'apply')
-        return call(l:Func.apply, a:000, l:Func)
-    elseif type(l:Func) == v:t_dict && has_key(l:Func, 'call')
-        return call(l:Func.call, a:000, s)
-    elseif type(l:Func) == v:t_string && l:Func == '' && has_key(s, 'function missing')
+    if type(Func) == v:t_func
+        return call(Func, a:000, s)
+    elseif type(Func) == v:t_dict && has_key(Func, 'apply')
+        return call(Func.apply, a:000, Func)
+    elseif type(Func) == v:t_dict && has_key(Func, 'call')
+        return call(Func.call, a:000, s)
+    elseif type(Func) == v:t_string && Func == '' && has_key(s, 'function missing')
         return call('s:send', [s, 'function missing', a:func] + a:000)
     else
-        return l:Func
+        return Func
     endif
 endfu
 
@@ -549,7 +549,7 @@ endfu
 fu s:coerce(...) abort
     if !a:0
         call s:get_transformation()
-        let &opfunc = expand('<sfile>')->matchstr('<SNR>\w*$')
+        let &opfunc = expand('<stack>')->matchstr('.*\zs<SNR>\w*')
         return 'g@l'
     endif
     let cb_save = &cb
