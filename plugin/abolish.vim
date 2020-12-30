@@ -265,7 +265,7 @@ fu s:parse_subvert(bang, line1, line2, count, args) abort
         let args = a:args
     endif
     let separator = matchstr(args, '^.')
-    let split = split(args, separator, 1)[1:]
+    let split = split(args, separator, 1)[1 :]
 
     return a:count || split ==# ['']
         \ ?     s:parse_substitute(a:bang, a:line1, a:line2, a:count, split)
@@ -283,7 +283,7 @@ fu s:parse_subvert(bang, line1, line2, count, args) abort
         \ ?     s:grep_command(rest, a:bang, flags, split[0])
         \
         \ : len(split) >= 2 && separator == ' '
-        \ ?     join(split[1:], ' ')->s:grep_command(a:bang, '', split[0])
+        \ ?     join(split[1 :], ' ')->s:grep_command(a:bang, '', split[0])
         \
         \ :     s:parse_substitute(a:bang, a:line1, a:line2, a:count, split)
 endfu
@@ -403,7 +403,7 @@ fu s:commands.search.process(bang, line1, line2, count, args) abort
     endif
     let opts = s:normalize_options(self.options)
     if len(a:args) > 1
-        return join(a:args[1:], ' ')->s:grep_command(a:bang, opts, a:args[0])
+        return join(a:args[1 :], ' ')->s:grep_command(a:bang, opts, a:args[0])
     elseif len(a:args) == 1
         return s:find_command(a:bang ? '!' : ' ', opts, a:args[0])
     else
@@ -438,7 +438,7 @@ fu s:parse_substitute(bang, line1, line2, count, args) abort
     elseif len(args) > 3
         call s:throw('E488: Trailing characters')
     endif
-    let [bad, good, flags] = (args + [''])[0:2]
+    let [bad, good, flags] = (args + [''])[0 : 2]
     if a:count == 0
         let cmd = 'substitute'
     else
@@ -461,7 +461,7 @@ fu s:commands.substitute.process(bang, line1, line2, count, args) abort
     if len(a:args) <= 1
         call s:throw('E471: Argument required')
     else
-        let good = join(a:args[1:], '')
+        let good = join(a:args[1 :], '')
         let cmd = a:bang ? '.' : '%'
         return s:substitute_command(cmd, a:args[0], good, self.options)
     endif
