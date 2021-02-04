@@ -58,7 +58,7 @@ fu s:words() abort
     while lnum <= line('w$')
         let line = getline(lnum)
         let col = 0
-        while match(line, '\<\k\k\+\>', col) != -1
+        while match(line, '\<\k\k\+\>', col) >= 0
             let words += [matchstr(line, '\<\k\k\+\>', col)]
             let col = matchend(line, '\<\k\k\+\>', col)
         endwhile
@@ -371,7 +371,7 @@ fu s:find_command(cmd, flags, word) abort
     " prompts (even with :silent).
     let cmd = (a:cmd =~ '[?!]' ? '?' : '/')
     call setreg('/', [s:pattern(dict, opts.boundaries)], 'c')
-    if opts.flags == '' || !search(@/, 'n')
+    if opts.flags == '' || search(@/, 'n') == 0
         return 'norm! ' .. cmd .. "\<cr>"
     elseif opts.flags =~ ';[/?]\@!'
         call s:throw("E386: Expected '?' or '/' after ';'")
