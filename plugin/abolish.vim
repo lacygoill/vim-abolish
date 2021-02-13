@@ -16,19 +16,19 @@ fu s:function(name) abort
 endfu
 
 fu s:send(self, func, ...) abort
-    if type(a:func) == v:t_string || type(a:func) == v:t_number
+    if typename(a:func) == 'string' || typename(a:func) == 'number'
         let l:Func = get(a:self, a:func, '')
     else
         let l:Func = a:func
     endif
-    let s = type(a:self) == v:t_dict ? a:self : {}
-    if type(Func) == v:t_func
+    let s = typename(a:self) =~ '^dict' ? a:self : {}
+    if typename(Func) =~ '^func'
         return call(Func, a:000, s)
-    elseif type(Func) == v:t_dict && has_key(Func, 'apply')
+    elseif typename(Func) =~ '^dict' && has_key(Func, 'apply')
         return call(Func.apply, a:000, Func)
-    elseif type(Func) == v:t_dict && has_key(Func, 'call')
+    elseif typename(Func) =~ '^dict' && has_key(Func, 'call')
         return call(Func.call, a:000, s)
-    elseif type(Func) == v:t_string && Func == '' && has_key(s, 'function missing')
+    elseif typename(Func) == 'string' && Func == '' && has_key(s, 'function missing')
         return call('s:send', [s, 'function missing', a:func] + a:000)
     else
         return Func
@@ -73,9 +73,9 @@ fu s:extractopts(list, opts) abort
         if a:list[i] =~ '^-[^=]' && has_key(a:opts, matchstr(a:list[i], '-\zs[^=]*'))
             let key = matchstr(a:list[i], '-\zs[^=]*')
             let value = matchstr(a:list[i], '=\zs.*')
-            if get(a:opts, key)->type() == v:t_list
+            if get(a:opts, key)->typename() =~ '^list'
                 let a:opts[key] += [value]
-            elseif get(a:opts, key)->type() == v:t_number
+            elseif get(a:opts, key)->typename() == 'number'
                 let a:opts[key] = 1
             else
                 let a:opts[key] = value
@@ -204,7 +204,7 @@ endfu
 
 fu s:Complete(A, L, P) abort
     " Vim bug: :Abolish -<Tab> calls this function with a:A equal to 0
-    return a:A =~# '^[^/?-]' && type(a:A) != v:t_number
+    return a:A =~# '^[^/?-]' && typename(a:A) != 'number'
         \ ?     s:words()->join("\n")
         \ : a:L =~# '^\w\+\s\+\%(-\w*\)\=$'
         \ ?     "-search\n-substitute\n-delete\n-buffer\n-cmdline\n"
@@ -289,7 +289,7 @@ fu s:parse_subvert(bang, line1, line2, count, args) abort
 endfu
 
 fu s:normalize_options(flags) abort
-    if type(a:flags) == v:t_dict
+    if typename(a:flags) =~ '^dict'
         let opts = a:flags
         let flags = get(a:flags, 'flags', '')
     else
