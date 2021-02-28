@@ -1,7 +1,7 @@
 if exists('g:loaded_abolish')
     finish
 endif
-let g:loaded_abolish = 1
+let g:loaded_abolish = v:true
 
 " Source:
 " https://github.com/tpope/vim-abolish/blob/master/plugin/abolish.vim
