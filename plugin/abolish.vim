@@ -505,7 +505,7 @@ fu s:commands.abbrev.process(bang, line1, line2, count, args) abort
         let cmd = ' sil! ' .. cmd
     endif
     if self.options.buffer
-        let cmd = cmd .. ' <buffer>'
+        let cmd ..= ' <buffer>'
     endif
     let [bad, good] = s:badgood(a:args)
     if substitute(bad, '[{},]', '', 'g') !~# '^\k*$'
