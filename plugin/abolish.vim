@@ -11,7 +11,8 @@ import Catch from 'lg.vim'
 " Utility functions {{{1
 
 fu s:function(name) abort
-    return substitute(a:name, '^s:', expand('<stack>')->matchstr('.*\zs<SNR>\d\+_'), '')
+    return a:name
+        \ ->substitute('^s:', expand('<stack>')->matchstr('.*\zs<SNR>\d\+_'), '')
         \ ->function()
 endfu
 
@@ -96,22 +97,22 @@ fu s:mixedcase(word) abort
 endfu
 
 fu s:camelcase(word) abort
-    let word = substitute(a:word, '-', '_', 'g')
+    let word = a:word->substitute('-', '_', 'g')
     if word !~# '_' && word =~# '\l'
-        return substitute(word, '^.', '\l&', '')
+        return word->substitute('^.', '\l&', '')
     else
         let pat = '\=submatch(1) == "" ? submatch(2)->tolower() : submatch(2)->toupper()'
-        return substitute(word, '\C\(_\)\=\(.\)', pat, 'g')
+        return word->substitute('\C\(_\)\=\(.\)', pat, 'g')
     endif
 endfu
 
 fu s:snakecase(word) abort
-    let word = substitute(a:word, '::', '/', 'g')
-    let word = substitute(word, '\(\u\+\)\(\u\l\)', '\1_\2', 'g')
-    let word = substitute(word, '\(\l\|\d\)\(\u\)', '\1_\2', 'g')
-    let word = substitute(word, '[.-]', '_', 'g')
-    let word = tolower(word)
-    return word
+    return a:word
+        \ ->substitute('::', '/', 'g')
+        \ ->substitute('\(\u\+\)\(\u\l\)', '\1_\2', 'g')
+        \ ->substitute('\(\l\|\d\)\(\u\)', '\1_\2', 'g')
+        \ ->substitute('[.-]', '_', 'g')
+        \ ->tolower()
 endfu
 
 fu s:uppercase(word) abort
@@ -304,14 +305,14 @@ fu s:normalize_options(flags) abort
         let opts.boundaries = 0
     endif
     let opts.case = (flags !~# 'I' ? get(opts, 'case', 1) : 0)
-    let opts.flags = substitute(flags, '\C[avIiw]', '', 'g')
+    let opts.flags = flags->substitute('\C[avIiw]', '', 'g')
     return opts
 endfu
 " }}}1
 " Searching {{{1
 
 fu s:subesc(pattern) abort
-    return substitute(a:pattern, '[][\\/.*+?~%()&]', '\\&', 'g')
+    return a:pattern->substitute('[][\\/.*+?~%()&]', '\\&', 'g')
 endfu
 
 fu s:sort(a, b) abort
@@ -471,7 +472,7 @@ endfu
 
 fu s:badgood(args) abort
     let words = copy(a:args)->filter({_, v -> v !~ '^-'})
-    call filter(a:args, {_, v -> v =~ '^-'})
+    eval a:args->filter({_, v -> v =~ '^-'})
     if empty(words)
         call s:throw('E471: Argument required')
     elseif !empty(a:args)
@@ -508,7 +509,7 @@ fu s:commands.abbrev.process(bang, line1, line2, count, args) abort
         let cmd ..= ' <buffer>'
     endif
     let [bad, good] = s:badgood(a:args)
-    if substitute(bad, '[{},]', '', 'g') !~# '^\k*$'
+    if bad->substitute('[{},]', '', 'g') !~# '^\k*$'
         call s:throw('E474: Invalid argument (not a keyword: ' .. string(bad) .. ')')
     endif
     if !self.options.delete && good == ''
